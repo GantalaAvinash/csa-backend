@@ -23,7 +23,7 @@ const SubjectSchema = new Schema({
 		type: Number,
 		required:true
 	},
-  subject: {
+  subjectName: {
     type: String,
     required: true
   },

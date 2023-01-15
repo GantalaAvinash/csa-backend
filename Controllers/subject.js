@@ -49,15 +49,15 @@ exports.getSubjectbySemId = async (req, res, next) => {
 };
 
 exports.subject=(req,res)=>{
-    const { subId, semId, batchId, subject, subjectLink } = req.body;
+    const { subId, semId, batchId, subjectName, subjectLink } = req.body;
     const usersubject = new subject({
         subId: subId,
         semId: semId,
         batchId: batchId,
-        subject: subject,
+        subjectName: subjectName,
         subjectLink: subjectLink
     });
-    if(!title || !Description ){
+    if(!subjectName || !subjectLink || !subId || !semId || !batchId){
         res.status(200).json({ message: "Please enter all details "});
     }
     else{usersubject.save().then(response => {

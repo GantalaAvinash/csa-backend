@@ -14,10 +14,10 @@ exports.getSubject=(req,res)=>{
 
 exports.getSubjectbyId = async (req, res, next) => {
 	try {
-		const { subjectId } = req.params;
+		const { subId } = req.params;
 
 		const subjectList = await subject.find({
-			subjectId: subjectId,
+			subId: subId,
 		});
 
 		res.status(200).json({

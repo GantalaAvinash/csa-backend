@@ -1,12 +1,17 @@
 const express = require("express");
 const eventController = require("../Controllers/events");
 const batchController = require("../Controllers/batch");
+const subjectController = require("../Controllers/subject");
 const courseController = require("../Controllers/courses");
 const contactUs = require('../Controllers/contactUs');
 
 const router = express.Router();
 
-
+router.route('/addsubject').post(subjectController.subject);
+router.route('/deletesubject/:subjectId').delete(subjectController.deleteSubject);
+router.route('/getsubject').get(subjectController.getSubject);
+router.route('/getsubject/:subjectId').get(subjectController.getSubjectbyId);
+router.route('/getsubjectbysem/:semId').get(subjectController.getSubjectbySemId);
 router.route('/getbatch').get(batchController.getBatch);
 router.route('/getbatch/:batchId').get(batchController.getBatchbyId);
 router.route('/getsem').get(batchController.getSemester);

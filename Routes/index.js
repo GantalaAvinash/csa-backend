@@ -1,12 +1,17 @@
 const express = require("express");
 const eventController = require("../Controllers/events");
+const batchController = require("../Controllers/batch");
 const courseController = require("../Controllers/courses");
 const contactUs = require('../Controllers/contactUs');
 
 const router = express.Router();
 
 
-
+router.route('/getbatch').get(batchController.getBatch);
+router.route('/getbatch/:batchId').get(batchController.getBatchbyId);
+router.route('/getsem').get(batchController.getSemester);
+router.route('/getsem/:semId').get(batchController.getSemesterbyId);
+router.route('/getsembybatch/:batchId').get(batchController.getSemesterbyBatchId);
 router.route('/getevent').get(eventController.getEvent);
 router.route('/getcourse').get(courseController.getCourse);
 router.route('/getevent/:event_id').get(eventController.getEventbyId);

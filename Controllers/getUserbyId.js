@@ -1,12 +1,12 @@
-const UserData = require('../Models/students');
+const UserData = require('../Models/user');
 
 
 exports.getUserbyId = async (req, res, next) => {
 	try {
-		const { std_id } = req.params;
+		const { user_id } = req.params;
 
 		const UsersList = await UserData.find({
-			std_id: std_id,
+			user_id: user_id,
 		});
 
 		res.status(200).json({

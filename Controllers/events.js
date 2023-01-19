@@ -14,17 +14,17 @@ exports.getEvent=(req,res)=>{
 }
 
 exports.event=(req,res)=>{
-    const { title, Description, driveLink, image} = req.body;
-    const userevent = new event({
+    const { title, description, driveLink, image} = req.body;
+    const events = new event({
         title: title,
-        Description: Description,
+        description: description,
         driveLink: driveLink,
         image: image
     });
-    if(!title || !Description ){
+    if(!title || !description ){
         res.status(200).json({ message: "Please enter all details "});
     }
-    else{userevent.save().then(response => {
+    else{events.save().then(response => {
             res.status(200).json({ message: "Data saved Successfully" })
         })
         .catch(err => {
@@ -67,40 +67,19 @@ exports.deleteevent = (req, res, next) => {
 }
 
 
-exports.updateEvent = (req, res, next) => {
-
-    const { event_id, title, Description, driveLink, image} = req.body;
-
-    event.findOneAndUpdate(
-        { event_id },
-        { event_id, title, Description, driveLink, image }
-    ).then(_result => {
-        res.status(200).json({
-            status: true,
-            message: `User object ${event_id} updated successfully`
-        })
-    }).catch(error => {
-        next(error);
+exports.updateEvent = (req, res) => {
+    const { title, description, driveLink, image } = req.body;
+    event.updateOne({ _id: req.params.id }, {
+        $set: {
+            title: title,
+            description: description,
+            driveLink: driveLink,
+            image: image
+        }
+    }).then(response => {
+        res.status(200).json({ message: "Data Updated Successfully" })
     })
-}
-
-exports.updateEventId = async (req, res, next) => {
-
-    const {event_id, event } = req.body;
-    const p = await User.findOne({ event_id })
-    console.log(p)
-    const events = p.event
-    event.push(event[0])
-    console.log(event)
-    event.findOneAndUpdate(
-        { event_id },
-        { event: events }
-    ).then(result => {
-        res.status(200).json({
-            status: true,
-            message: `Users object ${event_id} updated successfully`
+        .catch(err => {
+            res.status(500).json({ error: err })
         })
-    }).catch(error => {
-        next(error);
-    })
 }

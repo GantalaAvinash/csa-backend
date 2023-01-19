@@ -1,4 +1,4 @@
-const UsersData = require('../Models/students');
+const UsersData = require('../Models/user');
 
 exports.getUsers = async (req, res) => {
 	const Users = await UsersData.find();

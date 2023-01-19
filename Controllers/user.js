@@ -1,94 +1,95 @@
-const Student = require('../Models/students');
-
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const keys = require('../config/keys');
+const bcrypt = require('bcryptjs');
+const secret = 'yoursecretkey';
 
-const validateRegister2Input = require('../validation/register1');
-const validateLoginInput = require('../validation/login');
+const User = require('../Models/user');
 
 
 /// Inserting SignUp 
 exports.signUp =(req, res) => {
 
-    //Form vaildation
-    const { errors, isValid } = validateRegister2Input(req.body)
+    const { name, email, password } = req.body;
+    const newUser = new User({ name, rollNumber, email, password });
 
-    ///check vaildation
-
-    if(!isValid) {
-        return res.status(400).json(errors)
-    }
-
-    Student.findOne({ rollNumber: req.body.rollNumber }).then(returnedStuff => {
-        if(returnedStuff) {
-            return res.status(400).json({rollNumber: "rollNumber already exist!!!"})
-        }
-    });
-
-    // saving user with request information to database
-	const {std_id, fullName, rollNumber, email, phoneNumber, password } = req.body;
-
-	const signupStudent = new Student({
-		std_id : std_id,
-		fullName : fullName,
-		rollNumber : rollNumber,
-        email : email,
-        phoneNumber : phoneNumber,
-		password : password
-	});
-
-    bcrypt.genSalt(10, (err, salt) =>{
-        bcrypt.hash(signupStudent.password, salt, (err, hash) => {
-            if(err) throw err;
-            signupStudent.password = hash;
-            signupStudent.save().then(Student => res.json(Student)).catch(err => console.log(err));
+    bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
+        if (err) throw err;
+        newUser.password = hash;
+        newUser.save()
+            .then(user => {
+            jwt.sign(
+                { id: user._id },
+                secret,
+                { expiresIn: 3600 },
+                (err, token) => {
+                if (err) throw err;
+                res.json({
+                    token,
+                    user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    rollNumber: user.rollNumber,
+                    }
+                });
+                }
+            );
+            })
+            .catch(err => console.log(err));
         });
     });
-
 };
 
 
 exports.login =(req, res) => {
 
-    //what happens
-    const {errors, isValid} = validateLoginInput(req.body)
-    if (!isValid) {
-        return res.status(400).json(errors)
-    }
-    const rollNumber = req.body.rollNumber;
-    const password = req.body.password;
-
-    Student.findOne({ rollNumber: rollNumber }).then(Student => {
-
-        //check if user exists
-        if(!Student){
-            return res.status(404).json({message: "rollNumber not found"});
-        }
-
-        //check password
-        bcrypt.compare(password, Student.password).then(isMatch => {
-            if(isMatch){
-                //user matched
-                //create JWT payload
-
-                const payload ={ id: Student.pat_id, name: Student.fullName, rollNumber: Student.rollNumber, email: Student.email, phone: Student.phoneNumber, age: Student.age, gender: Student.gender};
-
-                //sign token
-                jwt.sign(
-                    payload,
-                    keys.secretOrKey2,
-                    {expiresIn: 3600},
-                    (err, token) => {
-                    res.json({ success: true, token: "Bearer" + token, payload});
+    const { email, password } = req.body;
+    User.findOne({ email })
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ emailnotfound: "Email not found" });
+      }
+      bcrypt.compare(password, user.password)
+        .then(isMatch => {
+          if (isMatch) {
+            const payload = { id: user.id, name: user.name };
+            jwt.sign(
+              payload,
+              secret,
+              { expiresIn: 3600 },
+              (err, token) => {
+                res.json({
+                  success: true,
+                  token: "Bearer " + token
                 });
+              });
+          } else {
+            return res
+              .status(400)
+              .json({ passwordincorrect: "Password incorrect" });
+          }
+        });
+    });
+};
 
-                
-            } else {
-                return res
-                .status(400)
-                .json({ message: "Password Incorrect"})
+exports.verifyToken = (req, res, next) => {
+    const token = req.body.token;
+    if (!token) {
+        return res.json({ authenticated: false });
+    }
+    jwt.verify(token, secret, (err, decoded) => {
+        if (err) {
+            return res.json({ authenticated: false });
+        }
+        User.findById(decoded.id)
+        .then(user => {
+            if (!user) {
+            return res.json({ authenticated: false });
             }
+            return res.json({ authenticated: true });
+        })
+        .catch(err => {
+            return res.json({ authenticated: false });
         });
     });
 };
